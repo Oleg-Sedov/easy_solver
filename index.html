@@ -143,7 +143,7 @@
             to { opacity: 1; transform: translateY(0); }
         }
 
-        /* === МОБИЛЬНАЯ ВЕРСИЯ (экраны меньше 480px) === */
+        /* === МОБИЛЬНАЯ ВЕРСИЯ === */
         @media (max-width: 480px) {
             body {
                 padding: 5px;
@@ -205,43 +205,20 @@
             }
         }
 
-        /* === ПЛАНШЕТНАЯ ВЕРСИЯ (480px - 768px) === */
         @media (min-width: 481px) and (max-width: 768px) {
             .container {
                 padding: 1.8rem;
             }
-
-            h1 {
-                font-size: 1.3rem;
-            }
-
-            button {
-                padding: 14px 18px;
-            }
+            h1 { font-size: 1.3rem; }
+            button { padding: 14px 18px; }
         }
 
-        /* === DESKTOP ВЕРСИЯ (больше 768px) === */
         @media (min-width: 769px) {
-            .container {
-                padding: 2.5rem;
-            }
-
-            h1 {
-                font-size: 1.6rem;
-            }
-
-            .question-text {
-                font-size: 1.3rem;
-            }
-
-            button {
-                padding: 16px 24px;
-                font-size: 1.05rem;
-            }
-
-            .result-action {
-                font-size: 1.6rem;
-            }
+            .container { padding: 2.5rem; }
+            h1 { font-size: 1.6rem; }
+            .question-text { font-size: 1.3rem; }
+            button { padding: 16px 24px; font-size: 1.05rem; }
+            .result-action { font-size: 1.6rem; }
         }
     </style>
 </head>
@@ -250,6 +227,9 @@
 <div class="container" id="app"></div>
 
 <script>
+    // ПРОВЕРЬТЕ ЭТУ СТРУКТУРУ
+    // Capped -> No -> Value = Bet Small
+    // Capped -> Yes -> Value = Bet Big
     const algorithm = {
         "Uncapped": {
             "Will they fastplay strong hands?": {
@@ -286,9 +266,7 @@
 
     function render() {
         app.innerHTML = ''; 
-        
         const result = getResult(currentPath);
-        
         if (result) {
             renderResult(result);
         } else {
@@ -391,7 +369,6 @@
         buttonsRow.appendChild(restartBtn);
 
         container.appendChild(buttonsRow);
-
         app.appendChild(container);
     }
 
@@ -402,7 +379,6 @@
         
         for (let i = 0; i < path.length - 1; i++) {
             let step = path[i];
-            
             if (currentLevel[step]) {
                 currentLevel = currentLevel[step];
             } else {
@@ -431,7 +407,6 @@
         if (Array.isArray(result)) {
             return result.join(" | ");
         }
-        
         return result;
     }
 
@@ -483,7 +458,6 @@
         buttonsRow.appendChild(restartBtn);
 
         container.appendChild(buttonsRow);
-
         app.appendChild(container);
     }
 
