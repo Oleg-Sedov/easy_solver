@@ -143,72 +143,23 @@
             to { opacity: 1; transform: translateY(0); }
         }
 
-        /* === МОБИЛЬНАЯ ВЕРСИЯ === */
         @media (max-width: 480px) {
-            body {
-                padding: 5px;
-                align-items: flex-start;
-            }
-
-            .container {
-                padding: 1.5rem 1rem;
-                max-width: 100%;
-            }
-
-            h1 {
-                font-size: 1.2rem;
-                margin-bottom: 1rem;
-            }
-
-            .question-text {
-                font-size: 1.1rem;
-            }
-
-            .question-box {
-                margin-bottom: 1.5rem;
-                min-height: 50px;
-            }
-
-            button {
-                padding: 12px 16px;
-                font-size: 0.95rem;
-            }
-
-            .options-grid {
-                gap: 8px;
-            }
-
-            .buttons-row {
-                flex-direction: column;
-                gap: 8px;
-                margin-top: 15px;
-            }
-
-            .restart-btn, .back-btn {
-                padding: 12px 20px;
-                font-size: 0.9rem;
-            }
-
-            .result-box {
-                padding: 15px;
-            }
-
-            .result-action {
-                font-size: 1.2rem;
-            }
-
-            .breadcrumb {
-                font-size: 0.7rem;
-                white-space: nowrap;
-                overflow: hidden;
-                text-overflow: ellipsis;
-            }
+            body { padding: 5px; align-items: flex-start; }
+            .container { padding: 1.5rem 1rem; max-width: 100%; }
+            h1 { font-size: 1.2rem; margin-bottom: 1rem; }
+            .question-text { font-size: 1.1rem; }
+            .question-box { margin-bottom: 1.5rem; min-height: 50px; }
+            button { padding: 12px 16px; font-size: 0.95rem; }
+            .options-grid { gap: 8px; }
+            .buttons-row { flex-direction: column; gap: 8px; margin-top: 15px; }
+            .restart-btn, .back-btn { padding: 12px 20px; font-size: 0.9rem; }
+            .result-box { padding: 15px; }
+            .result-action { font-size: 1.2rem; }
+            .breadcrumb { font-size: 0.7rem; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
         }
 
         @media (min-width: 481px) and (max-width: 768px) {
-            .container {
-                padding: 1.8rem;
-            }
+            .container { padding: 1.8rem; }
             h1 { font-size: 1.3rem; }
             button { padding: 14px 18px; }
         }
@@ -227,9 +178,6 @@
 <div class="container" id="app"></div>
 
 <script>
-    // ПРОВЕРЬТЕ ЭТУ СТРУКТУРУ
-    // Capped -> No -> Value = Bet Small
-    // Capped -> Yes -> Value = Bet Big
     const algorithm = {
         "Uncapped": {
             "Will they fastplay strong hands?": {
@@ -372,42 +320,37 @@
         app.appendChild(container);
     }
 
+    // ИСПРАВЛЕННАЯ ФУНКЦИЯ - прямая навигация по структуре
     function getResult(path) {
-        if (path.length < 3) return null;
+        if (path.length !== 3) return null;
         
-        let currentLevel = algorithm;
+        // path[0] = "Capped" или "Uncapped" (Range)
+        // path[1] = "Yes" или "No" (Ответ на вопрос)
+        // path[2] = "Value", "SDV", или "Bluff" (Тип руки)
         
-        for (let i = 0; i < path.length - 1; i++) {
-            let step = path[i];
-            if (currentLevel[step]) {
-                currentLevel = currentLevel[step];
-            } else {
-                let found = false;
-                for (let key in currentLevel) {
-                    if (currentLevel[key] && typeof currentLevel[key] === 'object' && currentLevel[key][step] !== undefined) {
-                        currentLevel = currentLevel[key];
-                        found = true;
-                        break;
-                    }
+        let range = path[0];
+        let answer = path[1];
+        let hand = path[2];
+        
+        // Проверяем существование пути
+        if (algorithm[range]) {
+            // Получаем ключ вопроса (первый и единственный ключ внутри range)
+            let questionKey = Object.keys(algorithm[range])[0];
+            
+            if (algorithm[range][questionKey] && 
+                algorithm[range][questionKey][answer] && 
+                algorithm[range][questionKey][answer][hand]) {
+                
+                let result = algorithm[range][questionKey][answer][hand];
+                
+                if (Array.isArray(result)) {
+                    return result.join(" | ");
                 }
-                if (!found) return null;
+                return result;
             }
         }
         
-        let lastStep = path[path.length - 1];
-        let result = null;
-        
-        for (let key in currentLevel) {
-            if (currentLevel[key] && typeof currentLevel[key] === 'object' && currentLevel[key][lastStep] !== undefined) {
-                result = currentLevel[key][lastStep];
-                break;
-            }
-        }
-        
-        if (Array.isArray(result)) {
-            return result.join(" | ");
-        }
-        return result;
+        return null;
     }
 
     function renderResult(action) {
