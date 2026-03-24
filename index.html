@@ -1,0 +1,494 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Poker Decision Solver</title>
+    <style>
+        :root {
+            --bg-color: #1a1a1a;
+            --card-bg: #2d2d2d;
+            --text-color: #e0e0e0;
+            --accent-color: #4caf50;
+            --secondary-bg: #3d3d3d;
+            --back-color: #2196f3;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            margin: 0;
+            padding: 10px;
+        }
+
+        .container {
+            background-color: var(--card-bg);
+            padding: 2rem;
+            border-radius: 12px;
+            box-shadow: 0 8px 32px rgba(0,0,0,0.5);
+            width: 100%;
+            max-width: 500px;
+            text-align: center;
+            display: flex;
+            flex-direction: column;
+        }
+
+        h1 {
+            font-size: 1.5rem;
+            margin-bottom: 1.5rem;
+            color: var(--accent-color);
+            text-transform: uppercase;
+        }
+
+        .question-box {
+            margin-bottom: 2rem;
+            min-height: 60px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .question-text {
+            font-size: 1.25rem;
+            font-weight: 600;
+        }
+
+        .options-grid {
+            display: grid;
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+
+        button {
+            background-color: var(--secondary-bg);
+            color: white;
+            border: 1px solid #555;
+            padding: 15px 20px;
+            border-radius: 8px;
+            font-size: 1rem;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        button:hover {
+            background-color: var(--accent-color);
+            border-color: var(--accent-color);
+            transform: translateY(-2px);
+        }
+
+        .buttons-row {
+            display: flex;
+            gap: 10px;
+            margin-top: 20px;
+        }
+
+        .restart-btn, .back-btn {
+            flex: 1;
+            background-color: transparent;
+            border: 1px solid #555;
+            color: #aaa;
+            font-size: 0.9rem;
+            padding: 10px 20px;
+        }
+
+        .restart-btn:hover {
+            background-color: #333;
+            border-color: #777;
+            color: white;
+            transform: none;
+        }
+
+        .back-btn:hover {
+            background-color: var(--back-color);
+            border-color: var(--back-color);
+            color: white;
+            transform: none;
+        }
+
+        .back-btn:disabled {
+            opacity: 0.3;
+            cursor: not-allowed;
+        }
+
+        .result-box {
+            background-color: rgba(76, 175, 80, 0.15);
+            border: 2px solid var(--accent-color);
+            padding: 20px;
+            border-radius: 8px;
+            animation: fadeIn 0.5s ease;
+        }
+
+        .result-action {
+            font-size: 1.5rem;
+            font-weight: bold;
+            color: var(--accent-color);
+        }
+
+        .breadcrumb {
+            font-size: 0.8rem;
+            color: #888;
+            margin-bottom: 1rem;
+            text-align: left;
+            border-bottom: 1px solid #444;
+            padding-bottom: 10px;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        /* === МОБИЛЬНАЯ ВЕРСИЯ (экраны меньше 480px) === */
+        @media (max-width: 480px) {
+            body {
+                padding: 5px;
+                align-items: flex-start;
+            }
+
+            .container {
+                padding: 1.5rem 1rem;
+                max-width: 100%;
+            }
+
+            h1 {
+                font-size: 1.2rem;
+                margin-bottom: 1rem;
+            }
+
+            .question-text {
+                font-size: 1.1rem;
+            }
+
+            .question-box {
+                margin-bottom: 1.5rem;
+                min-height: 50px;
+            }
+
+            button {
+                padding: 12px 16px;
+                font-size: 0.95rem;
+            }
+
+            .options-grid {
+                gap: 8px;
+            }
+
+            .buttons-row {
+                flex-direction: column;
+                gap: 8px;
+                margin-top: 15px;
+            }
+
+            .restart-btn, .back-btn {
+                padding: 12px 20px;
+                font-size: 0.9rem;
+            }
+
+            .result-box {
+                padding: 15px;
+            }
+
+            .result-action {
+                font-size: 1.2rem;
+            }
+
+            .breadcrumb {
+                font-size: 0.7rem;
+                white-space: nowrap;
+                overflow: hidden;
+                text-overflow: ellipsis;
+            }
+        }
+
+        /* === ПЛАНШЕТНАЯ ВЕРСИЯ (480px - 768px) === */
+        @media (min-width: 481px) and (max-width: 768px) {
+            .container {
+                padding: 1.8rem;
+            }
+
+            h1 {
+                font-size: 1.3rem;
+            }
+
+            button {
+                padding: 14px 18px;
+            }
+        }
+
+        /* === DESKTOP ВЕРСИЯ (больше 768px) === */
+        @media (min-width: 769px) {
+            .container {
+                padding: 2.5rem;
+            }
+
+            h1 {
+                font-size: 1.6rem;
+            }
+
+            .question-text {
+                font-size: 1.3rem;
+            }
+
+            button {
+                padding: 16px 24px;
+                font-size: 1.05rem;
+            }
+
+            .result-action {
+                font-size: 1.6rem;
+            }
+        }
+    </style>
+</head>
+<body>
+
+<div class="container" id="app"></div>
+
+<script>
+    const algorithm = {
+        "Uncapped": {
+            "Will they fastplay strong hands?": {
+                "Yes": {
+                    "Value": "Bet Small",
+                    "SDV": ["Small Flop", "Check Turn/River"],
+                    "Bluff": ["Small Flop/Turn", "Medium River"]
+                },
+                "No": {
+                    "Value": "Bet Big",
+                    "SDV": "Check",
+                    "Bluff": ["Check Flop/Turn", "Small River"]
+                }
+            }
+        },
+        "Capped": {
+            "Do they have inelastic hands?": {
+                "Yes": {
+                    "Value": "Bet Big",
+                    "SDV": "Check",
+                    "Bluff": ["Big Turn", "Small River"]
+                },
+                "No": {
+                    "Value": "Bet Small",
+                    "SDV": "Check",
+                    "Bluff": ["Small Turn", "Big River"]
+                }
+            }
+        }
+    };
+
+    let currentPath = []; 
+    const app = document.getElementById('app');
+
+    function render() {
+        app.innerHTML = ''; 
+        
+        const result = getResult(currentPath);
+        
+        if (result) {
+            renderResult(result);
+        } else {
+            renderQuestion();
+        }
+    }
+
+    function renderQuestion() {
+        let currentLevel = algorithm;
+        let questionText = "";
+        let options = [];
+
+        for (let step of currentPath) {
+            if (currentLevel[step]) {
+                currentLevel = currentLevel[step];
+            } else {
+                let found = false;
+                for (let key in currentLevel) {
+                    if (currentLevel[key] && typeof currentLevel[key] === 'object' && currentLevel[key][step] !== undefined) {
+                        currentLevel = currentLevel[key];
+                        found = true;
+                        break;
+                    }
+                }
+                if (!found) break;
+            }
+        }
+
+        if (currentPath.length === 0) {
+            questionText = "What is their range?";
+            options = ["Uncapped", "Capped"];
+        } 
+        else if (currentPath.length === 1) {
+            const keys = Object.keys(currentLevel);
+            questionText = keys[0]; 
+            options = Object.keys(currentLevel[keys[0]]); 
+        }
+        else if (currentPath.length === 2) {
+            questionText = "What is our hand?";
+            options = ["Value", "SDV", "Bluff"];
+        }
+
+        const container = document.createElement('div');
+        container.style.display = 'flex';
+        container.style.flexDirection = 'column';
+        container.style.height = '100%';
+        
+        const breadcrumb = document.createElement('div');
+        breadcrumb.className = 'breadcrumb';
+        breadcrumb.innerText = currentPath.length > 0 ? "Path: " + currentPath.join(" > ") : "Start";
+        container.appendChild(breadcrumb);
+
+        const title = document.createElement('h1');
+        title.innerText = "Decision Solver";
+        container.appendChild(title);
+
+        const qBox = document.createElement('div');
+        qBox.className = 'question-box';
+        const qText = document.createElement('div');
+        qText.className = 'question-text';
+        qText.innerText = questionText;
+        qBox.appendChild(qText);
+        container.appendChild(qBox);
+
+        const grid = document.createElement('div');
+        grid.className = 'options-grid';
+
+        options.forEach(opt => {
+            const btn = document.createElement('button');
+            btn.innerText = opt;
+            btn.onclick = () => {
+                currentPath.push(opt);
+                render();
+            };
+            grid.appendChild(btn);
+        });
+
+        container.appendChild(grid);
+
+        const buttonsRow = document.createElement('div');
+        buttonsRow.className = 'buttons-row';
+
+        const backBtn = document.createElement('button');
+        backBtn.className = 'back-btn';
+        backBtn.innerText = "← Back";
+        backBtn.disabled = currentPath.length === 0;
+        backBtn.onclick = () => {
+            currentPath.pop();
+            render();
+        };
+        buttonsRow.appendChild(backBtn);
+
+        const restartBtn = document.createElement('button');
+        restartBtn.className = 'restart-btn';
+        restartBtn.innerText = "↺ To the beginning";
+        restartBtn.onclick = () => {
+            currentPath = [];
+            render();
+        };
+        buttonsRow.appendChild(restartBtn);
+
+        container.appendChild(buttonsRow);
+
+        app.appendChild(container);
+    }
+
+    function getResult(path) {
+        if (path.length < 3) return null;
+        
+        let currentLevel = algorithm;
+        
+        for (let i = 0; i < path.length - 1; i++) {
+            let step = path[i];
+            
+            if (currentLevel[step]) {
+                currentLevel = currentLevel[step];
+            } else {
+                let found = false;
+                for (let key in currentLevel) {
+                    if (currentLevel[key] && typeof currentLevel[key] === 'object' && currentLevel[key][step] !== undefined) {
+                        currentLevel = currentLevel[key];
+                        found = true;
+                        break;
+                    }
+                }
+                if (!found) return null;
+            }
+        }
+        
+        let lastStep = path[path.length - 1];
+        let result = null;
+        
+        for (let key in currentLevel) {
+            if (currentLevel[key] && typeof currentLevel[key] === 'object' && currentLevel[key][lastStep] !== undefined) {
+                result = currentLevel[key][lastStep];
+                break;
+            }
+        }
+        
+        if (Array.isArray(result)) {
+            return result.join(" | ");
+        }
+        
+        return result;
+    }
+
+    function renderResult(action) {
+        const container = document.createElement('div');
+        container.style.display = 'flex';
+        container.style.flexDirection = 'column';
+        container.style.height = '100%';
+        
+        const title = document.createElement('h1');
+        title.innerText = "Recommendation";
+        container.appendChild(title);
+
+        const resultBox = document.createElement('div');
+        resultBox.className = 'result-box';
+
+        const resTitle = document.createElement('div');
+        resTitle.className = 'result-title';
+        resTitle.innerText = "Recommended Action:";
+        resultBox.appendChild(resTitle);
+
+        const resAction = document.createElement('div');
+        resAction.className = 'result-action';
+        resAction.innerText = action;
+        resultBox.appendChild(resAction);
+
+        container.appendChild(resultBox);
+
+        const buttonsRow = document.createElement('div');
+        buttonsRow.className = 'buttons-row';
+
+        const backBtn = document.createElement('button');
+        backBtn.className = 'back-btn';
+        backBtn.innerText = "← Back";
+        backBtn.disabled = currentPath.length === 0;
+        backBtn.onclick = () => {
+            currentPath.pop();
+            render();
+        };
+        buttonsRow.appendChild(backBtn);
+
+        const restartBtn = document.createElement('button');
+        restartBtn.className = 'restart-btn';
+        restartBtn.innerText = "↺ To the beginning";
+        restartBtn.onclick = () => {
+            currentPath = [];
+            render();
+        };
+        buttonsRow.appendChild(restartBtn);
+
+        container.appendChild(buttonsRow);
+
+        app.appendChild(container);
+    }
+
+    render();
+</script>
+
+</body>
+</html>
